@@ -19,7 +19,13 @@ export function DatePickerSimple({ title, value, onChange }) {
             label={title}
             value={value ? new Date(value) : null}
             onChange={handleDateChange}
-            renderInput={(params) => <TextField {...params} size="small" />}
+            renderInput={(params) => (
+                <TextField
+                    {...params}
+                    size="small"
+                    sx={{ width: '100%', maxWidth: 170 }}
+                />
+            )}
         />
     )
 }

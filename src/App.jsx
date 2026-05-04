@@ -1,4 +1,4 @@
-import Layout from "./layouts/layout.jsx"
+import Layout from "./layout/layout.jsx"
 import {
   createColumnHelper,
   flexRender,
@@ -6,7 +6,7 @@ import {
   useReactTable,
 } from '@tanstack/react-table'
 import { useRef, useMemo } from "react"
-import { Loader2, Check, X, AlertCircle, Pencil, ChevronDown, Trash, Search, Plane, Clock, Calendar, Database } from "lucide-react"
+import { Check, X, AlertCircle, Pencil, Trash, Search, Database } from "lucide-react"
 import { useVirtualizer } from "@tanstack/react-virtual"
 import { Checkbox } from "./components/ui/checkbox.jsx"
 import { DatePickerSimple } from "./components/date-picker.jsx"
@@ -23,8 +23,6 @@ import {
   IconButton,
   Chip,
   Card,
-  CardContent,
-  Grid,
   Button as MuiButton,
   Table,
   TableBody,
@@ -32,6 +30,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  CircularProgress,
 } from '@mui/material'
 
 const columnHelper = createColumnHelper()
@@ -126,7 +125,7 @@ function App() {
       cell: (info) => (
         <Chip
           label={info.getValue()}
-          color="primary"
+          color="grey"
           variant="filled"
           sx={{
             fontWeight: 'bold',
@@ -139,25 +138,22 @@ function App() {
     columnHelper.accessor('flightNumber', {
       header: 'FLIGHT NO.',
       cell: (info) => (
-        <Typography variant="body2" fontWeight="bold" color="text.primary">
+        <Typography variant="body2" sx={{ fontWeight: 'bold' }} color="text.primary">
           {info.getValue()}
         </Typography>
       ),
     }),
     columnHelper.accessor((row) => ({ from: row.origin, to: row.destination }), {
       id: 'route',
-      header: 'ROUTE',
+      header: 'ORGIN/DEST',
       cell: (info) => {
         const { from, to } = info.getValue()
         return (
           <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5, py: 1 }}>
-            <Typography variant="body2" fontWeight="bold" fontFamily="monospace" color="text.primary">
+            <Typography variant="body2" sx={{ fontWeight: 'bold', fontFamily: 'monospace' }} color="text.primary">
               {from}
             </Typography>
-            <Box sx={{ height: 20, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Plane sx={{ fontSize: 16, color: 'primary.main' }} />
-            </Box>
-            <Typography variant="body2" fontWeight="bold" fontFamily="monospace" color="text.primary">
+            <Typography variant="body2" sx={{ fontWeight: 'bold', fontFamily: 'monospace' }} color="text.primary">
               {to}
             </Typography>
           </Box>
@@ -171,38 +167,32 @@ function App() {
         const isEditing = state.editingId === row.original.id;
         if (isEditing && tempEditData) {
           return (
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, py: 0.5 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, py: 0.5, minWidth: 0, maxWidth: 150 }}>
               <TextField
                 type="time"
                 value={tempEditData.std}
                 onChange={(e) => updateTempEdit({ std: e.target.value })}
                 size="small"
-                sx={{ width: 96 }}
+                sx={{ width: '100%', maxWidth: 96 }}
               />
               <TextField
                 type="time"
                 value={tempEditData.sta}
                 onChange={(e) => updateTempEdit({ sta: e.target.value })}
                 size="small"
-                sx={{ width: 96 }}
+                sx={{ width: '100%', maxWidth: 96 }}
               />
             </Box>
           )
         }
         return (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-              <Clock sx={{ fontSize: 14, color: 'success.main' }} />
-              <Typography variant="body2" fontFamily="monospace" fontWeight="bold" color="text.primary">
-                {row.original.std}
-              </Typography>
-            </Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-              <Clock sx={{ fontSize: 14, color: 'warning.main' }} />
-              <Typography variant="body2" fontFamily="monospace" color="text.secondary" sx={{ mt: -0.25 }}>
-                {row.original.sta}
-              </Typography>
-            </Box>
+            <Typography variant="body2" sx={{ fontFamily: 'monospace', fontWeight: 'bold' }} color="text.primary">
+              {row.original.std}
+            </Typography>
+            <Typography variant="body2" sx={{ fontFamily: 'monospace', fontWeight: 'bold', mt: -0.25 }} color="text.secondary">
+              {row.original.sta}
+            </Typography>
           </Box>
         )
       },
@@ -213,11 +203,11 @@ function App() {
         const days = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
         const schedule = info.getValue()
         return (
-          <div className="flex gap-1">
+          <Box sx={{ display: 'flex', gap: 1 }}>
             {days.map((day, i) => (
               <DayCircle key={i} label={day} active={schedule.includes(i + 1)} />
             ))}
-          </div>
+          </Box>
         )
       },
     }),
@@ -228,7 +218,7 @@ function App() {
         const isEditing = state.editingId === row.original.id;
         if (isEditing && tempEditData) {
           return (
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, py: 0.5 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, py: 0.5, minWidth: 0, maxWidth: 148 }}>
               <DatePickerSimple title="Start Date" value={tempEditData.startDate} onChange={(e) => updateTempEdit({ startDate: e.target.value })} />
               <DatePickerSimple title="End Date" value={tempEditData.endDate} onChange={(e) => updateTempEdit({ endDate: e.target.value })} />
             </Box>
@@ -237,12 +227,9 @@ function App() {
         const start = new Date(row.original.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' });
         const end = new Date(row.original.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' });
         return (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <Calendar sx={{ fontSize: 14, color: 'primary.main' }} />
-            <Typography variant="body2" color="text.secondary" fontWeight="medium" sx={{ whiteSpace: 'nowrap' }}>
-              {start} - {end}
-            </Typography>
-          </Box>
+          <Typography variant="body2" sx={{ fontWeight: 'bold', whiteSpace: 'nowrap' }} color="text.secondary">
+            {start} - {end}
+          </Typography>
         )
       },
     }),
@@ -250,27 +237,7 @@ function App() {
       header: 'BODY',
       cell: (info) => (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'text.secondary' }}>
-          <Box sx={{
-            width: 24,
-            height: 20,
-            border: '2px solid',
-            borderColor: 'grey.300',
-            borderRadius: 1,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            p: 0.25,
-            opacity: 0.7
-          }}>
-            <Box sx={{
-              width: '100%',
-              height: '100%',
-              backgroundColor: 'grey.400',
-              borderRadius: 0.25,
-              mx: 'auto'
-            }} />
-          </Box>
-          <Typography variant="body2" color="text.secondary" fontWeight="medium" sx={{ textTransform: 'uppercase' }}>
+          <Typography variant="body2" sx={{ fontWeight: 'bold', textTransform: 'uppercase' }} color="text.secondary">
             {info.getValue() === "narrow_body" ? "Narrow" : "Wide"}
           </Typography>
         </Box>
@@ -305,14 +272,14 @@ function App() {
 
         if (isEditing) {
           return (
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1, minWidth: 100 }}>
               <IconButton
                 onClick={() => handleSave(row.original.id)}
                 disabled={isSaving}
                 color="success"
                 size="small"
               >
-                {isSaving ? <Loader2 /> : <Check />}
+                {isSaving ? <CircularProgress size={20} color="inherit" /> : <Check />}
               </IconButton>
               <IconButton
                 onClick={cancelEditing}
@@ -327,7 +294,7 @@ function App() {
         }
 
         return (
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1, minWidth: 80 }}>
             <IconButton
               onClick={() => startEditing(row.original)}
               color="primary"
@@ -368,25 +335,20 @@ function App() {
     overscan: 10,
   })
 
+  const virtualRows = rowVirtualizer.getVirtualItems()
+  const totalSize = rowVirtualizer.getTotalSize()
+
   return (
     <Layout>
-      <Box sx={{ p: 3 }}>
-        <Card sx={{ mb: 3, background: 'linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%)' }}>
-          <CardContent sx={{ p: 3 }}>
-            <Box display="flex" justifyContent="space-between" alignItems="center">
-              <Box display="flex" alignItems="center" gap={2}>
-                <Box>
-                  <Typography variant="h4" fontWeight="bold" color="text.primary">
+      <Box sx={{
+        minHeight: '100vh',
+        
+        background: 'linear-gradient(180deg, #f7faff 0%, #eef4ff 100%)'
+      }}>
+  
+        <Typography variant="h4" fontWeight="bold" color="text.primary" sx={{ mb: 1, fontSize: { xs: '1.8rem', md: '2rem' } }}>
                     Flight Schedule Management
                   </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Manage and monitor your airline flight operations
-                  </Typography>
-                </Box>
-              </Box>
-            </Box>
-          </CardContent>
-        </Card>
 
         <TableFilters
           filters={state.filters}
@@ -395,19 +357,22 @@ function App() {
           aocOptions={aocOptions}
         />
 
-        <Paper sx={{ borderRadius: 3, overflow: 'hidden', boxShadow: 3 }}>
+        <Paper sx={{ borderRadius: '14px', overflow: 'hidden', boxShadow: '0 14px 32px rgba(15, 23, 42, 0.05)' }}>
           <Box sx={{
             p: 3,
-            borderBottom: 1,
+            borderBottom: '1px solid',
             borderColor: 'divider',
-            background: 'linear-gradient(90deg, #f8fafc 0%, #e2e8f0 100%)'
+            background: '#f7f9ff'
           }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}
-              >
-                <Box sx={{ p: 1, backgroundColor: 'white', borderRadius: 1, boxShadow: 1 }}>
-                  <Database color="action" />
-                </Box>
+            <Box sx={{
+              display: 'flex',
+              flexDirection: { xs: 'column', md: 'row' },
+              alignItems: { xs: 'stretch', md: 'center' },
+              justifyContent: 'space-between',
+              gap: 3
+            }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            
                 <Box>
                   <Typography variant="h6" fontWeight="bold">
                     Flight Records
@@ -418,51 +383,57 @@ function App() {
                 </Box>
               </Box>
 
-              <TextField
-                placeholder="Search by flight no., origin, or destination..."
-                value={state.filters.searchQuery}
-                onChange={(e) => handleSearchChange(e.target.value)}
-                size="small"
-                sx={{ minWidth: 300 }}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Search />
-                    </InputAdornment>
-                  ),
-                  endAdornment: state.filters.searchQuery && (
-                    <InputAdornment position="end">
-                      <IconButton size="small" onClick={() => handleSearchChange("")}>
-                        <X />
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                }}
-              />
-              <div>
-              {selectedCount > 0 && (
-                <MuiButton
-                  variant="outlined"
-                  color="error"
-                  startIcon={<Trash />}
-                  onClick={handleDeleteSelected}
-                >
-                  Delete Selected ({selectedCount})
-                </MuiButton>
-              )}
-              </div>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 2, width: { xs: '100%', md: 'auto' } }}>
+                <TextField
+                  placeholder="Search by flight no., origin, or destination..."
+                  value={state.filters.searchQuery}
+                  onChange={(e) => handleSearchChange(e.target.value)}
+                  size="small"
+                  sx={{ width: { xs: '100%', sm: 320 }, backgroundColor: 'white', borderRadius: '12px' }}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Search />
+                      </InputAdornment>
+                    ),
+                    endAdornment: state.filters.searchQuery && (
+                      <InputAdornment position="end">
+                        <IconButton size="small" onClick={() => handleSearchChange("")}>
+                          <X />
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+
+                {selectedCount > 0 && (
+                  <MuiButton
+                    variant="contained"
+                    color="error"
+                    startIcon={<Trash />}
+                    onClick={handleDeleteSelected}
+                    sx={{ minWidth: 210, borderRadius: '12px' }}
+                  >
+                    Delete Selected ({selectedCount})
+                  </MuiButton>
+                )}
+              </Box>
             </Box>
           </Box>
 
-          <Box
+          <TableContainer
+            component={Box}
             ref={tableContainerRef}
             sx={{
-              overflow: 'auto',
-              height: 650,
-              background: 'linear-gradient(to bottom, white 0%, #f8fafc 100%)'
+              maxHeight: 650,
+              overflowY: 'auto',
+              overflowX: 'hidden',
+              background: 'linear-gradient(to bottom, white 0%, #f8fafc 100%)',
+              scrollBehavior: 'smooth',
+              minWidth: 0,
             }}
           >
-            <Table>
+            <Table stickyHeader sx={{ minWidth: 0 }}>
               <TableHead sx={{
                 position: 'sticky',
                 top: 0,
@@ -476,13 +447,14 @@ function App() {
                       <TableCell
                         key={header.id}
                         sx={{
-                          fontWeight: 'bold',
-                          fontSize: '0.75rem',
+                          fontWeight: 800,
+                          fontSize: '0.72rem',
                           color: 'text.secondary',
                           textTransform: 'uppercase',
-                          letterSpacing: '0.05em',
+                          letterSpacing: '0.08em',
                           borderBottom: '1px solid',
-                          borderBottomColor: 'divider'
+                          borderBottomColor: 'divider',
+                          backgroundColor: '#f7f9ff'
                         }}
                       >
                         {header.isPlaceholder
@@ -497,7 +469,7 @@ function App() {
                 ))}
               </TableHead>
               <TableBody>
-                {rowVirtualizer.getVirtualItems().length === 0 ? (
+                {virtualRows.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={columns.length} sx={{ textAlign: 'center', py: 8 }}>
                       <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
@@ -505,42 +477,69 @@ function App() {
                         <Typography variant="h6" color="text.secondary">
                           No flights found
                         </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          Try adjusting your filters
-                        </Typography>
+                        
                       </Box>
                     </TableCell>
                   </TableRow>
                 ) : (
-                  rowVirtualizer.getVirtualItems().map((virtualRow) => {
-                    const row = rows[virtualRow.index]
+                  (() => {
+                    const paddingTop = virtualRows.length ? virtualRows[0].start : 0
+                    const lastRow = virtualRows[virtualRows.length - 1]
+                    const paddingBottom = virtualRows.length
+                      ? totalSize - (lastRow.start + lastRow.size)
+                      : 0
+
                     return (
-                      <TableRow
-                        key={row.id}
-                        data-index={virtualRow.index}
-                        ref={rowVirtualizer.measureElement}
-                        sx={{
-                          '&:hover': {
-                            background: 'linear-gradient(90deg, rgba(25, 118, 210, 0.04) 0%, rgba(156, 39, 176, 0.04) 100%)',
-                          },
-                          transition: 'background-color 0.2s',
-                          borderBottom: '1px solid',
-                          borderBottomColor: 'divider',
-                          height: `${virtualRow.size}px`,
-                        }}
-                      >
-                        {row.getVisibleCells().map((cell) => (
-                          <TableCell key={cell.id} sx={{ py: 2 }}>
-                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                          </TableCell>
-                        ))}
-                      </TableRow>
+                      <>
+                        {paddingTop > 0 && (
+                          <TableRow sx={{ height: `${paddingTop}px` }}>
+                            <TableCell colSpan={columns.length} sx={{ p: 0, borderBottom: 'none' }} />
+                          </TableRow>
+                        )}
+
+                        {virtualRows.map((virtualRow) => {
+                          const row = rows[virtualRow.index]
+                          return (
+                            <TableRow
+                              key={row.id}
+                              data-index={virtualRow.index}
+                              ref={rowVirtualizer.measureElement}
+                              sx={{
+                                '&:hover': {
+                                  background: 'linear-gradient(90deg, rgba(25, 118, 210, 0.04) 0%, rgba(156, 39, 176, 0.04) 100%)',
+                                },
+                                transition: 'background-color 0.2s',
+                                borderBottom: '1px solid',
+                                borderBottomColor: 'divider',
+                                height: `${virtualRow.size}px`,
+                                backgroundColor: savingIds.has(row.original.id) 
+                                  ? 'rgba(76, 175, 80, 0.08)' 
+                                  : errorIds.has(row.original.id) 
+                                  ? 'rgba(244, 67, 54, 0.08)' 
+                                  : 'transparent',
+                              }}
+                            >
+                              {row.getVisibleCells().map((cell) => (
+                                <TableCell key={cell.id} sx={{ py: 2 }}>
+                                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                </TableCell>
+                              ))}
+                            </TableRow>
+                          )
+                        })}
+
+                        {paddingBottom > 0 && (
+                          <TableRow sx={{ height: `${paddingBottom}px` }}>
+                            <TableCell colSpan={columns.length} sx={{ p: 0, borderBottom: 'none' }} />
+                          </TableRow>
+                        )}
+                      </>
                     )
-                  })
+                  })()
                 )}
               </TableBody>
             </Table>
-          </Box>
+          </TableContainer>
         </Paper>
       </Box>
     </Layout>

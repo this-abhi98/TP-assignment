@@ -50,8 +50,8 @@ export function TableFilters({ filters, onFilterChange, onClear, aocOptions }) {
     };
 
     return (
-        <Paper sx={{display:'flex',gap:'4px', p: 3, mb: 3, borderRadius: 3 }}>
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', gap: 3 }}>
+        <Paper sx={{ display: 'flex', gap: 3, flexWrap: 'wrap', p: 3, mb: 3, borderRadius: 3, backgroundColor: 'rgba(255,255,255,0.96)', border: '1px solid', borderColor: 'divider', backdropFilter: 'blur(12px)' }}>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', gap: 3, width: '100%' }}>
                 <DatePickerWithRange
                     value={{
                         from: filters.dateRange.from ? new Date(filters.dateRange.from) : undefined,
@@ -60,7 +60,7 @@ export function TableFilters({ filters, onFilterChange, onClear, aocOptions }) {
                     onChange={handleDateChange}
                 />
 
-                <FormControl sx={{ minWidth: 200 }}>
+                <FormControl sx={{ minWidth: 200, flex: '1 1 240px' }}>
                     <Typography variant="body2" fontWeight="medium" sx={{ mb: 1 }}>
                         Days of Operation
                     </Typography>
@@ -79,7 +79,7 @@ export function TableFilters({ filters, onFilterChange, onClear, aocOptions }) {
                     </Box>
                 </FormControl>
 
-                <FormControl size="small" sx={{ minWidth: 160 }}>
+                <FormControl size="small" sx={{ minWidth: 160, flex: '1 1 160px' }}>
                     <InputLabel>Status</InputLabel>
                     <Select
                         value={filters.status}
@@ -92,7 +92,7 @@ export function TableFilters({ filters, onFilterChange, onClear, aocOptions }) {
                     </Select>
                 </FormControl>
 
-                <FormControl size="small" sx={{ minWidth: 120 }}>
+                <FormControl size="small" sx={{ minWidth: 120, flex: '1 1 140px' }}>
                     <InputLabel>AOC</InputLabel>
                     <Select
                         value={filters.aoc}
@@ -108,7 +108,7 @@ export function TableFilters({ filters, onFilterChange, onClear, aocOptions }) {
                     </Select>
                 </FormControl>
 
-                <FormControl size="small" sx={{ minWidth: 160 }}>
+                <FormControl size="small" sx={{ minWidth: 160, flex: '1 1 160px' }}>
                     <InputLabel>Body Type</InputLabel>
                     <Select
                         value={filters.bodyType}
@@ -121,7 +121,7 @@ export function TableFilters({ filters, onFilterChange, onClear, aocOptions }) {
                     </Select>
                 </FormControl>
 
-                <Box sx={{ display: 'flex', gap: 1, ml: 'auto' }}>
+                <Box sx={{ display: 'flex', gap: 1, ml: 'auto', minWidth: 140, justifyContent: 'flex-end' }}>
                     <MuiButton
                         variant="outlined"
                         startIcon={<RotateCcw />}

@@ -1,12 +1,7 @@
 import { useReducer, useState, useMemo } from "react";
 import { flightsData } from "../data/flights.js";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-// Using plain objects instead of TypeScript types
-
-// ─── Initial State ────────────────────────────────────────────────────────────
-
+// Initial State
 const initialFilters = {
   dateRange: { from: null, to: null },
   days: [],
@@ -23,8 +18,7 @@ const initialState = {
   filters: initialFilters,
 };
 
-// ─── Pure Helpers ─────────────────────────────────────────────────────────────
-
+// Helper function to filter flights
 function filterFlights(data, filters) {
   return data.filter((flight) => {
     if (filters.status !== "all" && flight.status !== filters.status) return false;
@@ -54,8 +48,7 @@ function filterFlights(data, filters) {
   });
 }
 
-// ─── Reducer ──────────────────────────────────────────────────────────────────
-
+// Reducer for state management
 function reducer(state, action) {
   switch (action.type) {
     case "SET_DATA": {
@@ -105,8 +98,7 @@ function reducer(state, action) {
   }
 }
 
-// ─── Hook ─────────────────────────────────────────────────────────────────────
-
+// Custom hook for flight schedules management
 export function useFlightSchedules() {
   const [state, dispatch] = useReducer(reducer, initialState);
   const [rowSelection, setRowSelection] = useState({});
@@ -114,8 +106,7 @@ export function useFlightSchedules() {
   const [errorIds, setErrorIds] = useState(new Set());
   const [tempEditData, setTempEditData] = useState(null);
 
-  // ── Derived ────────────────────────────────────────────────────────────────
-
+  // Derived state
   const aocOptions = useMemo(
     () => Array.from(new Set(state.data.map((f) => f.aoc))).sort(),
     [state.data]
@@ -123,8 +114,7 @@ export function useFlightSchedules() {
 
   const selectedCount = Object.keys(rowSelection).length;
 
-  // ── Actions ────────────────────────────────────────────────────────────────
-
+  // Action handlers
   const handleFilterChange = (filters) => {
     dispatch({ type: "SET_FILTER", payload: filters });
   };
@@ -170,6 +160,8 @@ export function useFlightSchedules() {
       setTempEditData(null);
     } catch {
       setErrorIds((prev) => new Set(prev).add(id));
+      setTempEditData(null);
+      dispatch({ type: "EDIT_FLIGHT", payload: null });
     } finally {
       setSavingIds((prev) => {
         const next = new Set(prev);
