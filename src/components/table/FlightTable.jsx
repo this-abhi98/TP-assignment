@@ -1,23 +1,49 @@
-import { createColumnHelper } from '@tanstack/react-table'
-import { useMemo } from "react"
-import { Check, X, AlertCircle, Pencil, Trash } from "lucide-react"
-import { Checkbox } from "./ui/checkbox.jsx"
-import { DatePickerSimple } from "./date-picker.jsx"
-import { Toggle } from "./toggle.jsx"
-import { DayCircle } from "./day-circle.jsx"
+import {
+  createColumnHelper,
+  flexRender,
+  getCoreRowModel,
+  useReactTable,
+} from '@tanstack/react-table'
+import { useRef, useMemo } from "react"
+import { Check, X, AlertCircle, Pencil, Trash, Database } from "lucide-react"
+import { useVirtualizer } from "@tanstack/react-virtual"
+import { Checkbox } from "../ui/checkbox.jsx"
+import { DatePickerSimple } from "../inputs/DatePicker.jsx"
+import { Toggle } from "../inputs/Toggle.jsx"
+import { DayCircle } from "../common/DayCircle.jsx"
 import {
   Box,
   Typography,
+  Paper,
   TextField,
   Chip,
-  IconButton,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
   CircularProgress,
+  IconButton,
 } from '@mui/material'
 
 const columnHelper = createColumnHelper()
 
-export function useTableColumns(state, tempEditData, savingIds, errorIds, handleSave, cancelEditing, updateTempEdit, handleToggleStatus, startEditing, handleDeleteById) {
-  return useMemo(() => [
+export function FlightTable({
+  state,
+  tempEditData,
+  rowSelection,
+  savingIds,
+  errorIds,
+  setRowSelection,
+  startEditing,
+  cancelEditing,
+  updateTempEdit,
+  handleSave,
+  handleDeleteById,
+  handleToggleStatus,
+}) {
+  const columns = useMemo(() => [
     {
       id: 'select',
       header: ({ table }) => (
@@ -274,4 +300,153 @@ export function useTableColumns(state, tempEditData, savingIds, errorIds, handle
       },
     }),
   ], [state.editingId, tempEditData, savingIds, errorIds, handleSave, cancelEditing, updateTempEdit, handleToggleStatus, startEditing, handleDeleteById])
+
+  const table = useReactTable({
+    data: state.filteredData,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    onRowSelectionChange: setRowSelection,
+    state: {
+      rowSelection,
+    },
+  })
+
+  const tableContainerRef = useRef(null)
+  const { rows } = table.getRowModel()
+
+  const rowVirtualizer = useVirtualizer({
+    count: rows.length,
+    getScrollElement: () => tableContainerRef.current,
+    estimateSize: () => 52,
+    overscan: 10,
+  })
+
+  const virtualRows = rowVirtualizer.getVirtualItems()
+  const totalSize = rowVirtualizer.getTotalSize()
+
+  return (
+    <Paper sx={{ borderRadius: '14px', overflow: 'hidden', boxShadow: '0 14px 32px rgba(15, 23, 42, 0.05)' }}>
+    
+
+      <TableContainer
+        component={Box}
+        ref={tableContainerRef}
+        sx={{
+          maxHeight: 650,
+          overflowY: 'auto',
+          overflowX: 'hidden',
+          background: 'linear-gradient(to bottom, white 0%, #f8fafc 100%)',
+          scrollBehavior: 'smooth',
+          minWidth: 0,
+        }}
+      >
+        <Table stickyHeader sx={{ minWidth: 0 }}>
+          <TableHead sx={{
+            position: 'sticky',
+            top: 0,
+            zIndex: 10,
+            background: 'linear-gradient(90deg, #e2e8f0 0%, #f1f5f9 100%)',
+            boxShadow: 2
+          }}>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => (
+                  <TableCell
+                    key={header.id}
+                    sx={{
+                      fontWeight: 800,
+                      fontSize: '0.72rem',
+                      color: 'text.secondary',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.08em',
+                      borderBottom: '1px solid',
+                      borderBottomColor: 'divider',
+                      backgroundColor: '#f7f9ff'
+                    }}
+                  >
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                        header.column.columnDef.header,
+                        header.getContext()
+                      )}
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))}
+          </TableHead>
+          <TableBody>
+            {virtualRows.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={columns.length} sx={{ textAlign: 'center', py: 8 }}>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                    <Database sx={{ fontSize: 48, color: 'text.disabled' }} />
+                    <Typography variant="h6" color="text.secondary">
+                      No flights found
+                    </Typography>
+                    
+                  </Box>
+                </TableCell>
+              </TableRow>
+            ) : (
+              (() => {
+                const paddingTop = virtualRows.length ? virtualRows[0].start : 0
+                const lastRow = virtualRows[virtualRows.length - 1]
+                const paddingBottom = virtualRows.length
+                  ? totalSize - (lastRow.start + lastRow.size)
+                  : 0
+
+                return (
+                  <>
+                    {paddingTop > 0 && (
+                      <TableRow sx={{ height: `${paddingTop}px` }}>
+                        <TableCell colSpan={columns.length} sx={{ p: 0, borderBottom: 'none' }} />
+                      </TableRow>
+                    )}
+
+                    {virtualRows.map((virtualRow) => {
+                      const row = rows[virtualRow.index]
+                      return (
+                        <TableRow
+                          key={row.id}
+                          data-index={virtualRow.index}
+                          ref={rowVirtualizer.measureElement}
+                          sx={{
+                            '&:hover': {
+                              background: 'linear-gradient(90deg, rgba(25, 118, 210, 0.04) 0%, rgba(156, 39, 176, 0.04) 100%)',
+                            },
+                            transition: 'background-color 0.2s',
+                            borderBottom: '1px solid',
+                            borderBottomColor: 'divider',
+                            height: `${virtualRow.size}px`,
+                            backgroundColor: savingIds.has(row.original.id) 
+                              ? 'rgba(76, 175, 80, 0.08)' 
+                              : errorIds.has(row.original.id) 
+                              ? 'rgba(244, 67, 54, 0.08)' 
+                              : 'transparent',
+                          }}
+                        >
+                          {row.getVisibleCells().map((cell) => (
+                            <TableCell key={cell.id} sx={{ py: 2 }}>
+                              {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                            </TableCell>
+                          ))}
+                        </TableRow>
+                      )
+                    })}
+
+                    {paddingBottom > 0 && (
+                      <TableRow sx={{ height: `${paddingBottom}px` }}>
+                        <TableCell colSpan={columns.length} sx={{ p: 0, borderBottom: 'none' }} />
+                      </TableRow>
+                    )}
+                  </>
+                )
+              })()
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </Paper>
+  )
 }

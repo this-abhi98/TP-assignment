@@ -1,6 +1,6 @@
-import { DatePickerWithRange } from "./date-range.jsx";
+import { DatePickerWithRange } from "../inputs/DateRange.jsx";
 import { RotateCcw } from "lucide-react";
-import { Button } from "./ui/button.jsx";
+import { Button } from "../ui/button.jsx";
 import {
   Box,
   Paper,

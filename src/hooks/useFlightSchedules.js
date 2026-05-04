@@ -1,5 +1,5 @@
 import { useReducer, useState, useMemo } from "react";
-import { flightsData } from "../data/flights.js";
+import { flightsData } from "../data/flightData.js";
 
 // Initial State
 const initialFilters = {
