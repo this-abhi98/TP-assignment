@@ -1,16 +1,11 @@
-// import { AppSidebar } from "@/components/app-sidebar"
-import { SiteHeader } from "@/components/site-header.jsx"
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar.jsx"
-
+import { Container, Box } from '@mui/material'
 
 export default function Layout({ children }) {
     return (
-        <SidebarProvider>
-            {/* <AppSidebar /> */}
-            <SidebarInset >
-                <SiteHeader />
+        <Box sx={{ minHeight: '100vh', backgroundColor: '#f5f5f5' }}>
+            <Container maxWidth="xl" sx={{ py: 2 }}>
                 {children}
-            </SidebarInset>
-        </SidebarProvider>
+            </Container>
+        </Box>
     )
 }

@@ -184,8 +184,15 @@ export function useFlightSchedules() {
   };
 
   const handleDeleteSelected = () => {
-    dispatch({ type: "DELETE_MULTIPLE", payload: Object.keys(rowSelection) });
-    setRowSelection({});
+    // Map row indices to actual flight IDs
+    const selectedIds = Object.keys(rowSelection)
+      .map(index => state.filteredData[parseInt(index)]?.id)
+      .filter(Boolean); // Remove undefined values
+    
+    if (selectedIds.length > 0) {
+      dispatch({ type: "DELETE_MULTIPLE", payload: selectedIds });
+      setRowSelection({});
+    }
   };
 
   const handleToggleStatus = (id) => {

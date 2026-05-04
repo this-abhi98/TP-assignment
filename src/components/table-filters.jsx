@@ -1,7 +1,18 @@
 import { DatePickerWithRange } from "./date-range.jsx";
 import { RotateCcw } from "lucide-react";
 import { Button } from "./ui/button.jsx";
-import { Field, FieldLabel } from "./ui/field.jsx";
+import {
+  Box,
+  Paper,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Chip,
+  Button as MuiButton,
+  IconButton,
+  Typography
+} from '@mui/material'
 
 export function TableFilters({ filters, onFilterChange, onClear, aocOptions }) {
     const days = [
@@ -39,88 +50,88 @@ export function TableFilters({ filters, onFilterChange, onClear, aocOptions }) {
     };
 
     return (
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex flex-wrap items-end gap-6 mb-6">
-            <DatePickerWithRange
-                value={{
-                    from: filters.dateRange.from ? new Date(filters.dateRange.from) : undefined,
-                    to: filters.dateRange.to ? new Date(filters.dateRange.to) : undefined
-                }}
-                onChange={handleDateChange}
-            />
+        <Paper sx={{display:'flex',gap:'4px', p: 3, mb: 3, borderRadius: 3 }}>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', gap: 3 }}>
+                <DatePickerWithRange
+                    value={{
+                        from: filters.dateRange.from ? new Date(filters.dateRange.from) : undefined,
+                        to: filters.dateRange.to ? new Date(filters.dateRange.to) : undefined
+                    }}
+                    onChange={handleDateChange}
+                />
 
-            <Field className="w-fit">
-                <FieldLabel>Days of Operation</FieldLabel>
-                <div className="flex gap-1.5 h-10 items-center">
-                    {days.map((d) => (
-                        <button
-                            key={d.value}
-                            onClick={() => toggleDay(d.value)}
-                            className={`w-9 h-9 rounded-lg flex items-center justify-center text-xs font-bold transition-all hover:cursor-pointer ${filters.days.includes(d.value)
-                                ? "bg-primary text-white shadow-sm"
-                                : "bg-slate-50 text-slate-400 border border-slate-100 hover:bg-slate-100"
-                                }`}
-                        >
-                            {d.label[0]}
-                        </button>
-                    ))}
-                </div>
-            </Field>
+                <FormControl sx={{ minWidth: 200 }}>
+                    <Typography variant="body2" fontWeight="medium" sx={{ mb: 1 }}>
+                        Days of Operation
+                    </Typography>
+                    <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'center' }}>
+                        {days.map((d) => (
+                            <Chip
+                                key={d.value}
+                                label={d.label[0]}
+                                size="small"
+                                variant={filters.days.includes(d.value) ? "filled" : "outlined"}
+                                color={filters.days.includes(d.value) ? "primary" : "default"}
+                                onClick={() => toggleDay(d.value)}
+                                sx={{ cursor: 'pointer', width: 36, height: 36 }}
+                            />
+                        ))}
+                    </Box>
+                </FormControl>
 
-            <Field className="w-40">
-                <FieldLabel htmlFor="filter-status">Status</FieldLabel>
-                <select
-                    id="filter-status"
-                    value={filters.status}
-                    onChange={(e) => onFilterChange({ status: e.target.value })}
-                    className="w-full h-10 bg-white border border-slate-200 rounded-lg px-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary hover:border-slate-300 transition-colors cursor-pointer"
-                >
-                    <option value="all">All Statuses</option>
-                    <option value="Active">Active</option>
-                    <option value="Inactive">Inactive</option>
-                </select>
-            </Field>
+                <FormControl size="small" sx={{ minWidth: 160 }}>
+                    <InputLabel>Status</InputLabel>
+                    <Select
+                        value={filters.status}
+                        label="Status"
+                        onChange={(e) => onFilterChange({ status: e.target.value })}
+                    >
+                        <MenuItem value="all">All Statuses</MenuItem>
+                        <MenuItem value="Active">Active</MenuItem>
+                        <MenuItem value="Inactive">Inactive</MenuItem>
+                    </Select>
+                </FormControl>
 
-            <Field className="w-32">
-                <FieldLabel htmlFor="filter-aoc">AOC</FieldLabel>
-                <select
-                    id="filter-aoc"
-                    value={filters.aoc}
-                    onChange={(e) => onFilterChange({ aoc: e.target.value })}
-                    className="w-full h-10 bg-white border border-slate-200 rounded-lg px-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary hover:border-slate-300 transition-colors cursor-pointer"
-                >
-                    <option value="all">All AOCs</option>
-                    {aocOptions.map((aoc) => (
-                        <option key={aoc} value={aoc}>
-                            {aoc}
-                        </option>
-                    ))}
-                </select>
-            </Field>
+                <FormControl size="small" sx={{ minWidth: 120 }}>
+                    <InputLabel>AOC</InputLabel>
+                    <Select
+                        value={filters.aoc}
+                        label="AOC"
+                        onChange={(e) => onFilterChange({ aoc: e.target.value })}
+                    >
+                        <MenuItem value="all">All AOCs</MenuItem>
+                        {aocOptions.map((aoc) => (
+                            <MenuItem key={aoc} value={aoc}>
+                                {aoc}
+                            </MenuItem>
+                        ))}
+                    </Select>
+                </FormControl>
 
-            <Field className="w-40">
-                <FieldLabel htmlFor="filter-body">Body Type</FieldLabel>
-                <select
-                    id="filter-body"
-                    value={filters.bodyType}
-                    onChange={(e) => onFilterChange({ bodyType: e.target.value })}
-                    className="w-full h-10 bg-white border border-slate-200 rounded-lg px-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary hover:border-slate-300 transition-colors cursor-pointer"
-                >
-                    <option value="all">All Body Types</option>
-                    <option value="narrow_body">Narrow Body</option>
-                    <option value="wide_body">Wide Body</option>
-                </select>
-            </Field>
+                <FormControl size="small" sx={{ minWidth: 160 }}>
+                    <InputLabel>Body Type</InputLabel>
+                    <Select
+                        value={filters.bodyType}
+                        label="Body Type"
+                        onChange={(e) => onFilterChange({ bodyType: e.target.value })}
+                    >
+                        <MenuItem value="all">All Body Types</MenuItem>
+                        <MenuItem value="narrow_body">Narrow Body</MenuItem>
+                        <MenuItem value="wide_body">Wide Body</MenuItem>
+                    </Select>
+                </FormControl>
 
-            <div className="flex gap-2 ml-auto">
-                <Button
-                    variant="ghost"
-                    onClick={onClear}
-                    className="bg-inherit h-10 px-4 text-slate-500 hover:text-slate-700 hover:bg-slate-50 gap-2 font-medium hover:cursor-pointer"
-                >
-                    <RotateCcw className="w-4 h-4" />
-                    Reset Filters
-                </Button>
-            </div>
-        </div>
+                <Box sx={{ display: 'flex', gap: 1, ml: 'auto' }}>
+                    <MuiButton
+                        variant="outlined"
+                        startIcon={<RotateCcw />}
+                        onClick={onClear}
+                        color="inherit"
+                    >
+                        Clear All
+                    </MuiButton>
+                </Box>
+            </Box>
+        </Paper>
     );
 }
